@@ -1,6 +1,9 @@
 # Virtual environments
 .venv
 
+# Output files
+*.TextGrid
+
 # Temp files
 tmp/
 
