@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import {
   Card,
   CardContent,
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { GiOldMicrophone } from "react-icons/gi";
 
 export default function Home() {
+  const router = useRouter()
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-center`}
@@ -36,7 +38,7 @@ export default function Home() {
             </DialogTrigger>
           </CardContent>
           <CardFooter className="gap-3">
-            <Button>Evaluate Speech</Button>
+            <Button onClick={() => router.push("/speech")}>Evaluate Speech</Button>
             <Button>Evaluate Presentation</Button>
           </CardFooter>
         </Card>
