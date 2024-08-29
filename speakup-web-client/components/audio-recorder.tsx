@@ -7,9 +7,10 @@ import { useSpeechEvalStore } from "@/lib/store";
 
 export default function AudioRecorder() {
 
-    const { audioBlob, updateAudioBlob } = useSpeechEvalStore((state) => ({
+    const { audioBlob, updateAudioBlob, updateSpeechEvalPhase } = useSpeechEvalStore((state) => ({
         audioBlob: state.audioBlob,
-        updateAudioBlob: state.updateAudioBlob
+        updateAudioBlob: state.updateAudioBlob,
+        updateSpeechEvalPhase: state.updatePhase
     }))
 
     const [recording, setRecording] = useState(false)
@@ -122,12 +123,21 @@ export default function AudioRecorder() {
             </Button>
 
             {audioBlob && (
-                <audio className="w-full" ref={audioRef} controls>
-                    <source
-                        src={URL.createObjectURL(audioBlob)}
-                        type={audioBlob.type}
-                    />
-                </audio>
+                <>
+                    <audio className="w-full" ref={audioRef} controls>
+                        <source
+                            src={URL.createObjectURL(audioBlob)}
+                            type={audioBlob.type}
+                        />
+                    </audio>
+                    <div className="w-full flex justify-center gap-6">
+                        <Button
+                            onClick={async () => {
+                            }}
+                        >Evaluate Speech</Button>
+                        <Button variant="outline">Model Settings</Button>
+                    </div>
+                </>
             )}
         </div>
     )
