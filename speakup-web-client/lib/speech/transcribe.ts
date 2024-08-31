@@ -1,7 +1,8 @@
 import { pipeline, env } from '@xenova/transformers';
+import { computeCosineSimilarity } from '../utils';
 env.allowLocalModels = false;
 
-export async function transcribeAudio(audioUrl: string) {
+export async function transcribeAudio(audioUrl: string): Promise<string | null> {
 
     return new Promise(async (resolve, reject) => {
         try {
@@ -13,14 +14,30 @@ export async function transcribeAudio(audioUrl: string) {
                 language: 'english',
                 task: 'transcribe',
             });
-            if (!Array.isArray(output)) {
-                console.log(output.text)
-                resolve(output.text)
+            if (Array.isArray(output)) {
+                // TODO handle output data array
+                reject(null)
+            } else if (!output.text) {
+                // unsuccessful transcription
+                reject(null)
             } else {
-                reject()
+                resolve(output.text)
             }
         } catch (error) {
-            reject(error)
+            console.error(error)
+            reject(null)
         }
     })
+}
+
+export async function computePhraseSimilarity(source: string, target: string) {
+    try {
+        const extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2')
+        const sourceEmbedding = await extractor(source, { pooling: 'mean', normalize: true });
+        const targetEmbedding = await extractor(target, { pooling: 'mean', normalize: true });
+
+        return computeCosineSimilarity(Array.from(sourceEmbedding.data as Float32Array), Array.from(targetEmbedding.data as Float32Array))
+    } catch (error) {
+        return null
+    }
 }

@@ -4,13 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { GiOldMicrophone } from "react-icons/gi";
 import { FiLoader } from "react-icons/fi";
 import { useSpeechEvalStore } from "@/lib/store";
+import { computePhraseSimilarity, transcribeAudio } from "@/lib/speech/transcribe";
 
 export default function AudioRecorder() {
 
-    const { audioBlob, updateAudioBlob, updateSpeechEvalPhase } = useSpeechEvalStore((state) => ({
+    const { sourcePhrase, audioBlob, updateAudioBlob, updateSpeechEvalPhase, updateRawTranscription, updatePhraseSimilarity } = useSpeechEvalStore((state) => ({
+        sourcePhrase: state.sourcePhrase,
         audioBlob: state.audioBlob,
         updateAudioBlob: state.updateAudioBlob,
-        updateSpeechEvalPhase: state.updatePhase
+        updateSpeechEvalPhase: state.updatePhase,
+        updateRawTranscription: state.updateRawTranscription,
+        updatePhraseSimilarity: state.updatePhraseSimilarity
     }))
 
     const [recording, setRecording] = useState(false)
@@ -107,7 +111,6 @@ export default function AudioRecorder() {
         }
     };
 
-
     return (
         <div className="flex flex-col items-center justify-center gap-6">
             <Button onClick={handleToggleRecording} className="rounded-full h-48 w-48 flex flex-col">
@@ -133,6 +136,24 @@ export default function AudioRecorder() {
                     <div className="w-full flex justify-center gap-6">
                         <Button
                             onClick={async () => {
+                                if (!sourcePhrase) {
+                                    return
+                                }
+                                updateSpeechEvalPhase("transcribing")
+                                const transcription = await transcribeAudio(URL.createObjectURL(audioBlob))
+                                if (!transcription) {
+                                    updateSpeechEvalPhase("error")
+                                    return
+                                }
+                                updateRawTranscription(transcription)
+                                updateSpeechEvalPhase("evaulating")
+                                const phraseSimilarity = await computePhraseSimilarity(sourcePhrase, transcription)
+                                if (!phraseSimilarity) {
+                                    updateSpeechEvalPhase("error")
+                                    return
+                                }
+                                updatePhraseSimilarity(phraseSimilarity)
+                                updateSpeechEvalPhase("finished")
                             }}
                         >Evaluate Speech</Button>
                         <Button variant="outline">Model Settings</Button>

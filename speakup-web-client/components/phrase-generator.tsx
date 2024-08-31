@@ -20,10 +20,14 @@ import {
 import { useEffect, useState } from "react";
 import { FiLoader, FiGlobe } from "react-icons/fi";
 import { Input } from "@/components/ui/input";
+import { useSpeechEvalStore } from "@/lib/store";
 
 export default function PhraseGenerator() {
 
-    const [phrase, setPhrase] = useState<string | undefined>(undefined);
+    const { sourcePhrase, updateSourcePhrase } = useSpeechEvalStore((state) => ({
+        sourcePhrase: state.sourcePhrase,
+        updateSourcePhrase: state.updateSourcePhrase
+    }))
     const [lang, setLang] = useState<string>("en");
     const [wordCount, setWordCount] = useState(10);
     const [generating, setGenerating] = useState(false);
@@ -40,14 +44,14 @@ export default function PhraseGenerator() {
                     return
                 }
                 const words = await res.json() as string[]
-                setPhrase(words.join(" "))
+                updateSourcePhrase(words.join(" "))
             } catch (error) {
 
             }
         }
 
         genPhrase(10)
-    }, [])
+    }, [updateSourcePhrase])
 
     return (
         <Card className="flex flex-col">
@@ -61,7 +65,7 @@ export default function PhraseGenerator() {
                 <Label>2: Submit your audio to be processed and (optionally) select a model to perform the transcription.</Label>
                 <br /><br />
                 <p>
-                    {phrase}
+                    {sourcePhrase}
                 </p>
             </CardContent>
             <CardFooter className="gap-3">
@@ -82,7 +86,7 @@ export default function PhraseGenerator() {
                                 return
                             }
                             const words = await res.json() as string[]
-                            setPhrase(words.join(" "))
+                            updateSourcePhrase(words.join(" "))
                             setGenerating(false)
                         } catch (error) {
                             // TODO error toast
